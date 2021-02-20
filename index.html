@@ -3,5 +3,144 @@
 <body>
 <h1>Hello World yangxueminghao</h1>
 <p>I'm hosted with GitHub Pages.</p>
+<h2>ActivityList</h2>
+<lable>名称：</lable><input type="text" name="name" value=" " /><br/>
+<lable>状态：</lable><p id="status" name="status" ></p>
+  <script>
+        $(function () {
+            var cookieName = $.cookie("name");
+            console.log("cookie:" + cookieName);
+            console.log("sessionStorage:" + sessionStorage.getItem("name"));
+            console.log("localStorage:" + localStorage.getItem("name"));
+            
+            $('input[name="name"]').blur(function () {
+                var name = $('input[name="name"]').val();
+                $.cookie("name", name, { expires: 7, path: '/' });
+                cookieName = $.cookie("name");
+                sessionStorage.setItem("name", name);
+                localStorage.setItem("name", name);
+                console.log("cookie:" + cookieName);
+                console.log("sessionStorage:" + sessionStorage.getItem("name"));
+                console.log("localStorage:" + localStorage.getItem("name"));
+                WebSqlTest(1,"asdgfsdk",1);
+                IndexDbTest("mydb", "1.0");
+                
+            })
+        })
+        function WebSqlTest(e_id, e_log,id) {
+            var db = openDatabase('mydb', '1.0', 'Test DB', 2 * 1024 * 1024);
+            
+            db.transaction(function (tx) {
+                //tx.executeSql('CREATE TABLE IF NOT EXISTS LOGS (id unique, log)');
+                //tx.executeSql('INSERT INTO LOGS (id, log) VALUES (1, "菜鸟教程")');
+                //tx.executeSql('INSERT INTO LOGS (id,log) VALUES (?, ?)', [e_id, e_log]); //使用外部变量，执行时会将变量数组中的值依次替换前边的问号位置
+                tx.executeSql('SELECT * FROM LOGS', [], function (tx, results) {
+                    var len = results.rows.length, i;
+                    msg = "<p>查询记录条数: " + len + "</p>";
+                    
+                    document.querySelector('#status').innerHTML = msg; 
+                    for (i = 0; i < len; i++) { 
+                        msg = "<p><b>" + results.rows.item(i).log + "</b></p>";
+                        document.querySelector('#status').innerHTML += msg;
+                    }
+                    console.log("msg:" + msg);
+                }, null); //查询和回调
+                //tx.executeSql('DELETE FROM LOGS  WHERE id=1'); //删除
+                ////tx.executeSql('DELETE FROM LOGS WHERE id=?', [id]);
+                //tx.executeSql('UPDATE LOGS SET log=\'www.w3cschool.cc\' WHERE id=2'); //更新
+                //tx.executeSql('UPDATE LOGS SET log=\'www.w3cschool.cc\' WHERE id=?', [id]);
+            });
+        }
+        function IndexDbTest(databaseName, version) {
+            var db;
+            var objectStore;
+            var request = window.indexedDB.open(databaseName, version);
+
+            request.onerror = function (event) { }
+            request.onsuccess = function (event) {
+                db = request.result;//可以拿到数据库对象
+                add(db);
+                readAll(db);
+                read(db);
+                //remove(db);
+            }
+            //如果指定的版本号，大于数据库的实际版本号，就会发生数据库升级事件upgradeneeded
+            request.onupgradeneeded = function (event) {
+                db = event.target.result;
+                if (!db.objectStoreNames.contains('person')) {//判断是否存在
+                    objectStore = db.createObjectStore('person', { keyPath: 'id' });
+                    //自动生成主键db.createObjectStore(
+                    //  'person',
+                    //  { autoIncrement: true }
+                    //);
+                }
+                //新建索引，参数索引名称、索引所在的属性、配置对象
+                objectStore.createIndex('email', 'email', { unique: true });
+            }
+
+            
+        }
+        function add(db) {
+            var request = db.transaction(['person'], 'readwrite')
+              .objectStore('person')
+              .add({ id: 4, name: '张we', age: 24, email: 'zhanggfkghjan@example.com' });
+
+            request.onsuccess = function (event) {
+                console.log('数据写入成功');
+            };
+
+            request.onerror = function (event) {
+                console.log('数据写入失败');
+            }
+        }
+        function read(db) {
+            var transaction = db.transaction(['person']);
+            var objectStore = transaction.objectStore('person');
+            var request = objectStore.get(1);
+
+            request.onerror = function (event) {
+                console.log('事务失败');
+            };
+
+            request.onsuccess = function (event) {
+                if (request.result) {
+                    console.log('Name: ' + request.result.name);
+                    console.log('Age: ' + request.result.age);
+                    console.log('Email: ' + request.result.email);
+                } else {
+                    console.log('未获得数据记录');
+                }
+            };
+        }
+        function readAll(db) {
+            var objectStore = db.transaction('person').objectStore('person');
+
+            objectStore.openCursor().onsuccess = function (event) {
+                var cursor = event.target.result;
+
+                if (cursor) {
+                    console.log('Id: ' + cursor.key);
+                    console.log('Name: ' + cursor.value.name);
+                    console.log('Age: ' + cursor.value.age);
+                    console.log('Email: ' + cursor.value.email);
+                    cursor.continue();
+                } else {
+                    console.log('没有更多数据了！');
+                }
+            };
+        }
+        function remove(db) {
+            var request = db.transaction(['person'], 'readwrite')
+              .objectStore('person')
+              .delete(1);
+
+            request.onsuccess = function (event) {
+                console.log('数据删除成功');
+            };
+        }
+
+        
+        
+    </script>
 </body>
 </html>
