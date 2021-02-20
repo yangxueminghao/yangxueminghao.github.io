@@ -15,11 +15,12 @@
             console.log("cookie:" + cookieName);
             console.log("sessionStorage:" + sessionStorage.getItem("name"));
             console.log("localStorage:" + localStorage.getItem("name"));
-            var count = 0;
+            var count = $.trim($.cookie("name") )== "" ? 0 : $.cookie("name");
             $('input[name="name"]').blur(function () {
                 var name = $('input[name="name"]').val();
                 $.cookie("name", name, { expires: 7, path: '/' });
-                $.cookie("count", count++);
+                count += 1;
+                $.cookie("count", count);
                 cookieName = $.cookie("name");
                 sessionStorage.setItem("name", name);
                 localStorage.setItem("name", name);
