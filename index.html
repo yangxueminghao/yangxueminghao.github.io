@@ -9,23 +9,24 @@
 <h2>ActivityList</h2>
 <lable>名称：</lable><input type="text" name="name" value=" " /><br/>
 <lable>状态：</lable><p id="status" name="status" ></p>
-  <script>
+ <script>
         $(function () {
             var cookieName = $.cookie("name");
             console.log("cookie:" + cookieName);
             console.log("sessionStorage:" + sessionStorage.getItem("name"));
             console.log("localStorage:" + localStorage.getItem("name"));
-            
+            var count = 0;
             $('input[name="name"]').blur(function () {
                 var name = $('input[name="name"]').val();
                 $.cookie("name", name, { expires: 7, path: '/' });
+                $.cookie("count", count++);
                 cookieName = $.cookie("name");
                 sessionStorage.setItem("name", name);
                 localStorage.setItem("name", name);
                 console.log("cookie:" + cookieName);
                 console.log("sessionStorage:" + sessionStorage.getItem("name"));
                 console.log("localStorage:" + localStorage.getItem("name"));
-                WebSqlTest(1,"asdgfsdk",1);
+                WebSqlTest($.cookie("count"), name, 1);
                 IndexDbTest("mydb", "1.0");
                 
             })
@@ -34,9 +35,9 @@
             var db = openDatabase('mydb', '1.0', 'Test DB', 2 * 1024 * 1024);
             
             db.transaction(function (tx) {
-                //tx.executeSql('CREATE TABLE IF NOT EXISTS LOGS (id unique, log)');
+                tx.executeSql('CREATE TABLE IF NOT EXISTS LOGS (id unique, log)');
                 //tx.executeSql('INSERT INTO LOGS (id, log) VALUES (1, "菜鸟教程")');
-                //tx.executeSql('INSERT INTO LOGS (id,log) VALUES (?, ?)', [e_id, e_log]); //使用外部变量，执行时会将变量数组中的值依次替换前边的问号位置
+                tx.executeSql('INSERT INTO LOGS (id,log) VALUES (?, ?)', [e_id, e_log]); //使用外部变量，执行时会将变量数组中的值依次替换前边的问号位置
                 tx.executeSql('SELECT * FROM LOGS', [], function (tx, results) {
                     var len = results.rows.length, i;
                     msg = "<p>查询记录条数: " + len + "</p>";
